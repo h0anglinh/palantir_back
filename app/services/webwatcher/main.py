@@ -30,6 +30,7 @@ class URL(StrEnum):
 class Contract(TypedDict):
     uuid: str
     tariff: str
+    data: str
 
 
 
@@ -38,41 +39,38 @@ class Invoice(TypedDict):
     invoice_number: int
     title: str
     href: str | None
-    created: datetime
+    issue_date: datetime
     due_date: datetime
     amount_CZK: float
     status: str
     paid: bool
 
 
-# class INVCE_item_contract_units(TypedDict):
-#     title: str
-#     unit_from_last_period: timedelta
-#     unit_from_current_period: timedelta
-#     unit_transferred: timedelta
+class INVCE_item_contract_units(TypedDict):
+    title: str
+    unit_from_last_period: str
+    unit_from_current_period: str
+    unit_transferred: str
 
 
-# class INVCE_item_contract_charged(TypedDict):
-#     title: str
-#     unit_used: str
-#     price: float
+class INVCE_item_contract_charged(TypedDict):
+    title: str
+    unit_used: str
+    price: float
 
 
-# class INVCE_item_contract(TypedDict):
-#     tax_doc: str
-#     free_units: dict[str, INVCE_item_contract_units]
-#     service_charged: dict[str, INVCE_item_contract_charged]
-#     phone_number: str
-#     total_sum: float
+class INVCE_item_contract(TypedDict):
+    invoice_number: int
+    free_units: dict[str, INVCE_item_contract_units]
+    service_charged: dict[str, INVCE_item_contract_charged]
+    phone_number: str
+    total_sum: float
 
 
-# class INVCE_item_header(TypedDict):
-#     created: datetime
 
+class INVCE_item(TypedDict):
+    contracts: dict[str, INVCE_item_contract]
 
-# class INVCE_item(TypedDict):
-#     contracts: dict[str, INVCE_item_contract]
-#     header: INVCE_item_header
 
 
 class Watch:
@@ -149,24 +147,24 @@ class Watch:
                     "invoice_number": int(anchor_ele.replace(URL.INVOICE_DETAIL_, "")),
                     "title": unidecode(cols[0].text),
                     "href": anchor_ele,
-                    "created": datetime.strptime(
+                    "issue_date": datetime.strptime(
                         cols[1].text.replace(" ", ""), "%d.%m.%Y"
                     ),
                     "due_date": datetime.strptime(
                         cols[2].text.replace(" ", ""), "%d.%m.%Y"
                     ),
-                    "amount_CZK": float(unidecode(cols[4].text).replace(" Kc", "")),
+                    "amount": float(unidecode(cols[4].text).replace(" Kc", "")),
                     "status": unidecode(
                         cols[5]
                         .text.replace("\nDetail platby", "")
                         .replace("Zaplatit on-line", "")
                     ),
-                    "paid": True if "-green" in status_classes else False,
+                    "is_paid": True if "-green" in status_classes else False,
                 }
                 invoice_list.append(invoice)
         return invoice_list
 
-    def get_invoice_details(self, href: str):
+    def get_invoice_details(self, href: str) -> dict[str, INVCE_item_contract]:
         """scrap invoice details, req.parameter - href"""
         instance = self.to(href)
         WebDriverWait(instance, 10).until(
@@ -185,21 +183,22 @@ class Watch:
         table_rows = invoice_overview_table.find_elements(By.TAG_NAME, "tr")
 
         created = table_rows[4].find_element(By.CLASS_NAME, "_text-align-right")
-        invoice_details["header"] = {
-            "created": datetime.strptime(created.text.replace(" ", ""), "%d.%m.%Y"),
-        }
+        # invoice_details["header"] = {
+        #     "created": datetime.strptime(created.text.replace(" ", ""), "%d.%m.%Y"),
+        # }
 
-        tax_document = invoice_head[1].text.replace("Daňový doklad č.:", "")
+        tax_document = invoice_head[1].text.replace("Daňový doklad č.: ", "")
 
         invoice_details["contracts"] = {}
 
         contracts = instance.find_elements(By.CSS_SELECTOR, ".invoice>table")
+ 
 
         for i, contract in enumerate(contracts):  # sluzba
             sections = contract.find_elements(By.CLASS_NAME, "gray-wrapper")
-
+          
             item_contract = {}
-            item_contract["tax_doc"] = tax_document
+            item_contract["invoice_number"] = int(tax_document)
             head_dates = contract.find_element(By.CLASS_NAME, "invoice-head__dates")
             item_invoice_phone_number_str = head_dates.find_elements(By.TAG_NAME, "li")[
                 1
@@ -222,9 +221,9 @@ class Watch:
                     last_period_minutes, last_period_seconds = map(
                         int, item_unit_from_last_period.split(":")
                     )
-                    unit_from_last_period = timedelta(
+                    unit_from_last_period = str(timedelta(
                         minutes=last_period_minutes, seconds=last_period_seconds
-                    )
+                    ))
                 else:
                     try:
                         unit_from_last_period = int(item_unit_from_last_period)
@@ -243,9 +242,9 @@ class Watch:
                     current_period_minutes, current_period_seconds = map(
                         int, item_unit_from_current_period.split(":")
                     )
-                    unit_from_current_period = timedelta(
+                    unit_from_current_period = str(timedelta(
                         minutes=current_period_minutes, seconds=current_period_seconds
-                    )
+                    ))
                 else:
                     try:
                        unit_from_current_period = int(item_unit_from_current_period)
@@ -264,9 +263,9 @@ class Watch:
                         int, item_unit_transferred.split(":")
                     )
 
-                    unit_transferred = timedelta(
+                    unit_transferred = str(timedelta(
                         minutes=transferred_minutes, seconds=transfered_seconds
-                    )
+                    ))
                 else:
                     unit_transferred = item_unit_transferred
 
@@ -313,6 +312,7 @@ class Watch:
 
             for index, section in enumerate(sections):
                 section_title = section.find_element(By.TAG_NAME, "strong").text
+
                 if section_title == "Ostatní poplatky":
                     item_contract["other_services"] = []
                     for service in sections[index].find_elements(By.TAG_NAME, "tr")[1:]:
@@ -326,16 +326,21 @@ class Watch:
                         }
                         item_contract["other_services"].append(service_item)
 
-            total_sum_wrap = sections[4]
-            item_total_sum = total_sum_wrap.find_element(
+            total_sum_wrap_new = sections[-1]
+            item_total_sum_new = total_sum_wrap_new.find_element(
                 By.CLASS_NAME, "_text-align-right"
             ).text
 
             item_contract["phone_number"] = item_invoice_phone_number
             invoice_details["contracts"][item_contract["phone_number"]] = item_contract
+           
             invoice_details["contracts"][item_contract["phone_number"]][
                 "total_sum"
-            ] = float(item_total_sum.replace(",", ".").replace(" ", ""))
-        return invoice_details
+            ] = float(item_total_sum_new.replace(",", ".").replace(" ", ""))
+            invoice_details["contracts"][item_contract["phone_number"]][
+                "total_sum_raw"
+            ] = item_total_sum_new
+       
+        return invoice_details['contracts']
 
 
