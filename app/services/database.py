@@ -1,4 +1,6 @@
 from dotenv import load_dotenv
+from fastapi import Depends
+from .dependencies import get_bank_data
 import os
 from typing import List, Optional
 import asyncpg
@@ -49,7 +51,19 @@ class scrapped_Invoice(BaseModel):
     status: str
     paid: bool
 
-
+class transaction(BaseModel):
+    amount: float
+    transaction_date: str
+    sender_name: str
+    execution_date: str
+    sender_account: str
+    receiver_account: str
+    description_account: str
+    message_for_receiver: str
+    variable_symbol: str
+    constant_symbol: str
+    currency: str
+    transaction_id: int
 
 
 
@@ -130,3 +144,40 @@ async def insert_new_invoice_details(conn: Connection, invoiceItem: dict[str, IN
             errors.append(str(e))
             
     return errors
+
+from ..models.fio import TransactionList
+from datetime import datetime
+async def insert_new_bank_record( conn: Connection, transactionList:TransactionList ): # type: ignore
+    insert_query = """
+        INSERT INTO finance.payments (amount, transaction_date, sender_name, sender_account, message_for_receiver, constant_symbol, sender_bank_code, sender_bank_name, transaction_id)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        """
+    error = []
+    success = []
+
+
+
+    for inv in transactionList:
+        transaction_id = inv['column22']['value']
+        try:
+            date_str = inv['column0']['value']
+            date_str = date_str[:10] + 'T00:00:00' + date_str[10:]
+            transaction_date = datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S%z")
+
+            msg_for_reciever = inv['column16']['value']
+            ks = inv['column4']['value']
+            currency = inv['column14']['value']
+            sender_account = inv['column2']['value']
+            bank_code = int(inv['column3']['value'])
+            bank_name = inv['column12']['value']
+            transaction_id = inv['column22']['value']
+            amount = inv['column1']['value']
+            sender_name = inv['column10']['value']
+            await conn.execute(insert_query, amount, transaction_date, sender_name, sender_account, msg_for_reciever, ks, bank_code, bank_name, transaction_id )
+            success.append(f'transaction {transaction_id} ({amount} {currency}) added')
+        except asyncpg.exceptions.UniqueViolationError as e:
+            error.append(f'{transaction_id} already added')
+
+       
+    
+    return {"error": error, "success": success}

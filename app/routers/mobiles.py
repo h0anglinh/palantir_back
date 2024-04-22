@@ -114,3 +114,6 @@ async def create_tariff(tariff: Tariff, conn: Connection = Depends(get_db_connec
     await database.insert_new_tariff(conn,new_tarif=tariff)
 
     return tariff
+
+
+
