@@ -1,0 +1,10 @@
+Time,Logger Name,Level,Message,Line No
+2024-04-25 09:16:31, main, INFO, server started, 29
+2024-04-25 09:16:31, main, INFO, server started, 29
+2024-04-25 09:16:31, main, INFO, server started, 29
+2024-04-25 09:16:31, main, INFO, server started, 29
+2024-04-25 14:59:14, main, INFO, server started, 29
+2024-04-25 14:59:15, main, INFO, root page access, redirect to docs, 80
+2024-04-25 15:01:33, main, INFO, server shutdown, 31
+2024-04-25 15:01:35, main, INFO, server started, 29
+2024-04-25 15:01:37, main, INFO, server started, 29

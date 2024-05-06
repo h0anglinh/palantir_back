@@ -9,11 +9,14 @@ from asyncpg import Connection
 from ..services import database
 from enum import StrEnum
 from pydantic import BaseModel, HttpUrl, validator
-from ..services.database import get_db_connection
-
+from ..services.database import get_db_connection, Invoice
+from ..logger import setup_logger
+from ..models.mobiles import InvoiceResponseModel
 
 db_connection = None
 router = APIRouter(prefix='/mobiles')
+
+mobile_logger = setup_logger('mobiles')
 # Načte proměnné prostředí z .env souboru
 load_dotenv()
 user = os.getenv("O2_NAME")
@@ -24,29 +27,53 @@ instance = Watch(uid=user, pwd=password)
 async def get_available_invoices(conn: Connection = Depends(get_db_connection)):
     user = os.getenv("O2_NAME")
     password = os.getenv("O2_PASSWORD")
+    mobile_logger.info('/invoices used')
     if not user or not password:
+        mobile_logger.error(' no user and/or password value')
         raise HTTPException(status_code=500, detail="02_NAME and/or O2_PASSWORD values are not set up")
     try:
         instance = Watch(uid=user, pwd=password)
         scraped_invoices = instance.login().scrape_invoicelist()
+        mobile_logger.info('invoices scrapped')
     except Exception as e:
         # Ostatní chyby
+        mobile_logger.error('invoices couldnt be scrapped')
         raise HTTPException(status_code=500, detail=f"Neznámá chyba: {str(e)}")
     
     db_invoices = []
     try:
         db_invoices  = await conn.fetch("SELECT * FROM mobile_services.invoices")
+        mobile_logger.info('invoices fetched')
     except:
+        mobile_logger.error('invoices not fetched')
         return {'error': 'error'}
 
     missing_invoices = database.find_missing_invoices(scraped_invoices, db_invoices)
-    await database.insert_new_invoice(conn, missing_invoices)
+    saved = []
+    try:
+        saved = await database.insert_new_invoice(conn, scraped_invoices)
+        mobile_logger.info('invoices inserted to DB')
+    except Exception as e:
+        mobile_logger.error(f'invoices not inserted, error: {str(e)}')
 
-    return  jsonable_encoder({'new': missing_invoices,"found_invoices": scraped_invoices})
+    # try:
+    #     await database.insert_new_invoice(conn, missing_invoices)
+    #     mobile_logger.info('invoices inserted to DB')
+    # except Exception as e:
+    #     mobile_logger.error(f'invoices not inserted, error: {str(e)}')
+
+    # try:
+    #     await database.update_invoice(conn, updated_invoices)
+    # except Exception as e:
+    #     print(e)
+
+    return  jsonable_encoder({'new': missing_invoices,"found_invoices": scraped_invoices, 'saved': saved})
 
 
 
-@router.get("/invoice", tags=["o2 family"])
+
+
+@router.get("/invoice", tags=["o2 family"], response_model=InvoiceResponseModel)
 async def get_invoice(conn: Connection = Depends(get_db_connection), href: str = Query(..., description="The invoice detail URL")):
     user = os.getenv("O2_NAME")
     password = os.getenv("O2_PASSWORD")

@@ -1,0 +1,44 @@
+Time,Logger Name,Level,Message,Line No
+2024-04-27 16:17:25, mobiles, INFO, /invoices used, 30
+2024-04-27 16:17:33, mobiles, INFO, invoices scrapped, 37
+2024-04-27 16:17:33, mobiles, INFO, invoices fetched, 46
+2024-04-27 16:17:33, mobiles, ERROR, invoices not inserted, error: duplicate key value violates unique constraint "invoices_invoice_number_key"
+DETAIL:  Key (invoice_number)=(7413024286) already exists., 56
+2024-04-27 16:17:33, mobiles, INFO, invoices inserted to DB, 60
+2024-04-27 16:21:45, mobiles, INFO, /invoices used, 30
+2024-04-27 16:21:53, mobiles, INFO, invoices scrapped, 37
+2024-04-27 16:21:53, mobiles, INFO, invoices fetched, 46
+2024-04-27 16:21:53, mobiles, ERROR, invoices not inserted, error: duplicate key value violates unique constraint "invoices_invoice_number_key"
+DETAIL:  Key (invoice_number)=(7413024286) already exists., 56
+2024-04-27 16:21:53, mobiles, INFO, invoices inserted to DB, 60
+2024-04-27 16:26:37, mobiles, INFO, /invoices used, 30
+2024-04-27 16:26:43, mobiles, INFO, invoices scrapped, 37
+2024-04-27 16:26:44, mobiles, INFO, invoices fetched, 46
+2024-04-27 16:26:44, mobiles, INFO, invoices inserted to DB, 54
+2024-04-27 16:26:44, mobiles, INFO, invoices inserted to DB, 60
+2024-04-27 16:28:48, mobiles, INFO, /invoices used, 30
+2024-04-27 16:28:55, mobiles, INFO, invoices scrapped, 37
+2024-04-27 16:28:55, mobiles, INFO, invoices fetched, 46
+2024-04-27 16:28:55, mobiles, INFO, invoices inserted to DB, 54
+2024-04-27 16:28:55, mobiles, INFO, invoices inserted to DB, 60
+2024-04-27 16:44:56, mobiles, INFO, /invoices used, 30
+2024-04-27 16:45:02, mobiles, INFO, invoices scrapped, 37
+2024-04-27 16:45:02, mobiles, INFO, invoices fetched, 46
+2024-04-27 16:45:02, mobiles, ERROR, invoices not inserted, error: invalid input for query argument $8: '2024-04-03' ('str' object has no attribute 'toordinal'), 56
+2024-04-27 16:45:02, mobiles, INFO, invoices inserted to DB, 60
+2024-04-27 16:49:12, mobiles, INFO, /invoices used, 30
+2024-04-27 16:49:19, mobiles, INFO, invoices scrapped, 37
+2024-04-27 16:49:19, mobiles, INFO, invoices fetched, 46
+2024-04-27 16:49:19, mobiles, ERROR, invoices not inserted, error: invalid input for query argument $8: '2024-04-03' ('str' object has no attribute 'toordinal'), 57
+2024-04-27 16:51:04, mobiles, INFO, /invoices used, 30
+2024-04-27 16:51:11, mobiles, INFO, invoices scrapped, 37
+2024-04-27 16:51:11, mobiles, INFO, invoices fetched, 46
+2024-04-27 16:51:11, mobiles, ERROR, invoices not inserted, error: invalid input for query argument $8: '2024-04-03' ('str' object has no attribute 'toordinal'), 57
+2024-04-27 16:55:56, mobiles, INFO, /invoices used, 30
+2024-04-27 16:56:03, mobiles, INFO, invoices scrapped, 37
+2024-04-27 16:56:03, mobiles, INFO, invoices fetched, 46
+2024-04-27 16:56:03, mobiles, INFO, invoices inserted to DB, 55
+2024-04-27 21:21:26, mobiles, INFO, /invoices used, 30
+2024-04-27 21:21:34, mobiles, INFO, invoices scrapped, 37
+2024-04-27 21:21:34, mobiles, INFO, invoices fetched, 46
+2024-04-27 21:21:34, mobiles, INFO, invoices inserted to DB, 55

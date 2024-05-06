@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from unidecode import unidecode
 from enum import StrEnum
 import os
-
+import re
 
 class URL(StrEnum):
     """
@@ -193,9 +193,53 @@ class Watch:
 
         contracts = instance.find_elements(By.CSS_SELECTOR, ".invoice>table")
  
-
+       
         for i, contract in enumerate(contracts):  # sluzba
             sections = contract.find_elements(By.CLASS_NAME, "gray-wrapper")
+
+            poplatky = [] 
+            regular_fees = []
+            discounts = []
+            labels = []
+            for index, section in enumerate(sections):
+                # Hledáme v sekci element <th>, který obsahuje text 'Ostatní poplatky'
+
+
+                headers = section.find_elements(By.TAG_NAME, "th")
+                for header in headers:
+                    labels.append(header.text)
+                    if 'PRAVIDELNÉ POPLATKY (BEZ DPH)' in header.text:
+                        rows = section.find_elements(By.TAG_NAME, "tr")[1:]  # Přeskakování hlavičky tabulky
+                        for row in rows:
+                            # Získání názvu a ceny poplatku
+                            nazev = re.sub(r"\s*\([^)]*\)", "", row.find_element(By.TAG_NAME, "td").text)
+                            cena = row.find_elements(By.TAG_NAME, "td")[2].text
+                            cena = float(cena.replace(',', '.').strip())
+                            
+                            # Přidání poplatku do seznamu
+                            regular_fees.append({'lable': nazev, 'price': cena})
+                    if 'OSTATNÍ POPLATKY (BEZ DPH)' in header.text:
+                        rows = section.find_elements(By.TAG_NAME, "tr")[1:]  # Přeskakování hlavičky tabulky
+                        for row in rows:
+                            # Získání názvu a ceny poplatku
+                            nazev = row.find_element(By.TAG_NAME, "td").text
+                            cena = row.find_elements(By.TAG_NAME, "td")[1].text
+                            cena = float(cena.replace(',', '.').strip())
+                            
+                            # Přidání poplatku do seznamu
+                            poplatky.append({'lable': nazev, 'price': cena})
+                    if "KREDITACE, SLEVY (BEZ DPH)" in header.text:
+                        rows = section.find_elements(By.TAG_NAME, "tr")[1:]  # Přeskakování hlavičky tabulky
+                        for row in rows:
+                            # Získání názvu a ceny poplatku
+                            nazev = row.find_element(By.TAG_NAME, "td").text
+                            cena = row.find_elements(By.TAG_NAME, "td")[1].text
+                            cena = float(cena.replace(',', '.').strip())
+                            
+                            # Přidání poplatku do seznamu
+                            discounts.append({'lable': nazev, 'price': cena})
+                    
+
           
             item_contract = {}
             item_contract["invoice_number"] = int(tax_document)
@@ -211,6 +255,11 @@ class Watch:
             free_units_items = free_units.find_elements(By.TAG_NAME, "tr")[1:]
 
             item_contract["free_units"] = {}
+            item_contract['other_fees'] = poplatky
+            item_contract['regular_fees'] = regular_fees
+            item_contract['labels'] = labels
+            item_contract['discounts'] = discounts
+
             for item in free_units_items:
                 item_title = unidecode(item.find_elements(By.TAG_NAME, "td")[0].text)
                 item_unit_from_last_period = unidecode(
@@ -277,7 +326,6 @@ class Watch:
                 }
                 item_contract["free_units"][item_free_unit["title"]] = item_free_unit
 
-            regular_fees = sections[1]  # sekce pravidelne poplatky
 
             charges_services = sections[2]  # sekce poskytovane sluzby
             charges_services_items = charges_services.find_elements(By.TAG_NAME, "tr")[

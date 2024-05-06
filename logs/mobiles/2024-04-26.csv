@@ -1,0 +1,16 @@
+Time,Logger Name,Level,Message,Line No
+2024-04-26 21:28:52, mobiles, INFO, /invoices used, 30
+2024-04-26 21:29:00, mobiles, INFO, invoices scrapped, 37
+2024-04-26 21:29:00, mobiles, INFO, invoices fetched, 46
+2024-04-26 21:29:00, mobiles, INFO, invoices inserted to DB, 54
+2024-04-26 21:29:00, mobiles, INFO, invoices inserted to DB, 60
+2024-04-26 21:36:12, mobiles, INFO, /invoices used, 30
+2024-04-26 21:36:20, mobiles, INFO, invoices scrapped, 37
+2024-04-26 21:36:21, mobiles, INFO, invoices fetched, 46
+2024-04-26 21:36:21, mobiles, INFO, invoices inserted to DB, 54
+2024-04-26 21:36:21, mobiles, INFO, invoices inserted to DB, 60
+2024-04-26 21:40:54, mobiles, INFO, /invoices used, 30
+2024-04-26 21:41:01, mobiles, INFO, invoices scrapped, 37
+2024-04-26 21:41:01, mobiles, INFO, invoices fetched, 46
+2024-04-26 21:41:01, mobiles, INFO, invoices inserted to DB, 54
+2024-04-26 21:41:01, mobiles, INFO, invoices inserted to DB, 60

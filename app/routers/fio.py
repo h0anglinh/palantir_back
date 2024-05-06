@@ -1,14 +1,18 @@
 from fastapi import APIRouter,HTTPException, Query, Depends
 import os
 import httpx
-from dotenv import load_dotenv
+
 from asyncpg import Connection
 from ..services.database import get_db_connection
 from ..services import database
 from ..services.dependencies import get_bank_data
+from dotenv import load_dotenv
+from ..logger import setup_logger
 load_dotenv()
 TOKEN = os.getenv("FIO_TOKEN")
 FIO_ACCOUNT = os.getenv("FIO_ACCOUNT_PERSONAL")
+
+fio_logger = setup_logger('fio')
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
 from pydantic import BaseModel
@@ -27,20 +31,10 @@ today = now.strftime(format_time)
 current_year = now.year
 two_month_ago = (now - relativedelta(months=2)).strftime(format_time)
 
-
-
-
-
-
-# def two_month_ago():
-#     return (datetime.now() - timedelta(days=60)).strftime("%Y-%m-%d")
-
-# def today():
-#     return datetime.now().strftime("%Y-%m-%d")
-
     
 @router.get('/period', tags=['FIO'], summary='Get balance history', response_model=BankData)
 async def get_status(bank_data=Depends(get_bank_data)):
+    fio_logger.info('/period access')
     return bank_data
 
 
@@ -48,21 +42,19 @@ async def get_status(bank_data=Depends(get_bank_data)):
 
 @router.get('/store', tags=['FIO'], summary='save transaction to DB')
 async def save_transaction(conn: Connection = Depends(get_db_connection)):
-    
-    async with httpx.AsyncClient() as client:
-        response = await client.get(f"{BASE_URL}/fio/period")
+    fio_logger.info('/store access')
+    async with httpx.AsyncClient(base_url=BASE_URL) as client:
+        response = await client.get("/fio/period")
         data: BankData = response.json()
 
         transactionList = data['accountStatement']['transactionList']['transaction']
 
-        res  = await database.insert_new_bank_record(conn,transactionList=transactionList)
-
-
-
-        # Zpracování dat
-        return res
-     
-    #  res  = await database.insert_new_bank_record(conn=conn)
+        try:
+            res  = await database.insert_new_bank_record(conn,transactionList=transactionList)
+            # Zpracování dat
+            return res
+        except:
+            fio_logger.error('insert_new_bank_record failed')
 
 class PaymentOrder(BaseModel):
     accountTo: str

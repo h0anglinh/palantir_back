@@ -1,0 +1,27 @@
+Time,Logger Name,Level,Message,Line No
+2024-04-23 14:29:16, mobiles, INFO, /invoices used, 29
+2024-04-23 14:29:25, mobiles, INFO, invoices scrapped, 36
+2024-04-23 14:29:25, mobiles, INFO, invoices fetched, 45
+2024-04-23 14:29:25, mobiles, INFO, invoices inserted to DB, 53
+2024-04-23 14:55:58, mobiles, INFO, /invoices used, 30
+2024-04-23 14:56:05, mobiles, INFO, invoices scrapped, 37
+2024-04-23 14:56:06, mobiles, INFO, invoices fetched, 46
+2024-04-23 14:56:06, mobiles, INFO, invoices inserted to DB, 55
+2024-04-23 14:58:23, mobiles, INFO, /invoices used, 30
+2024-04-23 14:58:33, mobiles, INFO, invoices scrapped, 37
+2024-04-23 14:58:33, mobiles, INFO, invoices fetched, 46
+2024-04-23 14:58:33, mobiles, INFO, invoices inserted to DB, 55
+2024-04-23 14:59:46, mobiles, INFO, /invoices used, 30
+2024-04-23 14:59:53, mobiles, INFO, invoices scrapped, 37
+2024-04-23 14:59:53, mobiles, INFO, invoices fetched, 46
+2024-04-23 14:59:53, mobiles, INFO, invoices inserted to DB, 55
+2024-04-23 15:01:26, mobiles, INFO, /invoices used, 30
+2024-04-23 15:01:35, mobiles, INFO, invoices scrapped, 37
+2024-04-23 15:01:35, mobiles, INFO, invoices fetched, 46
+2024-04-23 15:01:35, mobiles, INFO, invoices inserted to DB, 55
+2024-04-23 15:01:35, mobiles, INFO, invoices inserted to DB, 66
+2024-04-23 15:03:20, mobiles, INFO, /invoices used, 30
+2024-04-23 15:03:27, mobiles, INFO, invoices scrapped, 37
+2024-04-23 15:03:27, mobiles, INFO, invoices fetched, 46
+2024-04-23 15:03:27, mobiles, INFO, invoices inserted to DB, 55
+2024-04-23 15:03:27, mobiles, INFO, invoices inserted to DB, 66
